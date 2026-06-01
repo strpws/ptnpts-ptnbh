@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jumlah Mahasiswa Baru PTN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* PTN (blue) spectrum */
+    --ptn-bar:#00559A; --ptn-hover:#0062B1; --ptn-deep:#004A88; --ptn-pale:#EBF2FA;
+    /* PTS (gold) spectrum — used as hover/active highlight accent */
+    --pts-bar:#DBAA00; --pts-hover:#E8B500; --pts-deep:#9A7800; --pts-pale:#FEF6D8;
+    /* neutrals */
+    --tx-head:#222222; --tx-dark:#333333; --tx-mid:#666666; --tx-light:#999999;
+    --border:#DDDDDD; --divider:#EFEFEF; --track:#F4F4F4; --rowhover:#F5F8FC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:#FFFFFF;}
+  body{
+    font-family:"PT Sans",Arial,sans-serif;
+    color:var(--tx-dark);
+    display:flex;justify-content:center;
+    padding:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    min-width:640px;
+    max-width:1080px;
+    aspect-ratio:2/3;
+    background:#FFFFFF;
+    border-radius:6px;
+    padding:22px 22px 20px 22px;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    opacity:0;transform:translateY(6px);
+  }
+  .card.in{opacity:1;transform:translateY(0);transition:opacity .35s ease,transform .35s ease;}
+
+  /* header */
+  .title{font-family:"Lora",Georgia,serif;font-weight:700;font-size:20px;color:var(--tx-head);line-height:1.2;}
+  .deck{font-family:"Lora",Georgia,serif;font-style:italic;font-weight:400;font-size:15px;color:var(--tx-mid);margin-top:6px;line-height:1.35;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:13px;padding:7px 0;}
+  .legend .item{display:flex;align-items:center;gap:5px;font-weight:700;font-size:14px;color:var(--tx-dark);cursor:default;}
+  .legend .swatch{width:14px;height:4px;border-radius:9999px;flex:none;}
+
+  /* chart */
+  .chartwrap{position:relative;flex:1 1 auto;margin-top:6px;min-height:0;}
+  svg.chart{width:100%;height:100%;display:block;overflow:visible;}
+
+  .gridline{stroke:var(--divider);stroke-width:1;}
+  .axisbase{stroke:var(--border);stroke-width:1;}
+  .ylab{font-size:12px;font-weight:700;fill:var(--tx-dark);}
+  .xlab{font-size:12px;font-weight:700;fill:var(--tx-light);}
+
+  path.series{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;
+    transition:opacity .13s ease,stroke-width .13s ease;}
+  path.hit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer;}
+
+  /* dimming on hover */
+  svg.chart.has-active path.series{opacity:.18;}
+  svg.chart.has-active path.series.active{opacity:1;stroke:var(--pts-hover);stroke-width:3;}
+
+  .dot{fill:var(--pts-hover);stroke:#fff;stroke-width:1.5;opacity:0;pointer-events:none;}
+  .dot.show{opacity:1;}
+
+  text.lbl{font-size:11px;font-weight:700;opacity:0;transition:opacity .3s ease;}
+  line.leader{stroke-width:1;opacity:0;transition:opacity .3s ease;}
+  text.lbl.shown,line.leader.shown{opacity:1;}
+  line.leader.shown{opacity:.45;}
+
+  /* tooltip */
+  .tooltip{
+    position:absolute;pointer-events:none;z-index:5;
+    background:#fff;border:1px solid var(--border);border-radius:6px;
+    padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.10);
+    opacity:0;transform:scale(.88);transform-origin:top left;
+    transition:opacity .14s ease,transform .14s ease;
+    min-width:120px;
+  }
+  .tooltip.show{opacity:1;transform:scale(1);}
+  .tt-year{font-weight:700;font-size:15px;color:var(--tx-head);}
+  .tt-name{font-weight:700;font-size:13px;color:var(--tx-light);margin-top:2px;}
+  .tt-val{font-weight:700;font-size:14px;color:var(--ptn-deep);margin-top:4px;}
+  .tt-pill{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:9999px;
+    font-weight:700;font-size:12px;background:var(--pts-pale);color:var(--pts-deep);}
+
+  /* footer */
+  .source{margin-top:13px;font-size:12px;font-weight:400;color:var(--tx-light);line-height:1.4;}
+  .source b{font-weight:700;color:var(--tx-mid);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+    .card{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1 class="title">Jumlah Mahasiswa Baru di PTN</h1>
+    <p class="deck">PTNBH tumbuh hingga empat kali lipat dalam satu dekade; rata-rata PTS justru stagnan dan menurun.</p>
+
+    <div class="legend" id="legend" aria-hidden="true"></div>
+
+    <div class="chartwrap">
+      <svg class="chart" id="chart" role="list" aria-label="Tren jumlah mahasiswa baru 21 PTN, 2014 hingga 2025"></svg>
+      <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    </div>
+
+    <p class="source">
+      <b>Sumber:</b> Kemendiktisaintek &middot; Diolah: Kompas/EKI/FAI/SPW. Hanya mahasiswa S1 dan D4/sarjana terapan.
+      Garis dikelompokkan menurut tahun status PTNBH.
+    </p>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var years = [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+
+  // university -> values per year (index aligned with `years`)
+  var data = {
+    "IPB":[3410,3432,3595,3710,3698,3798,4328,4207,6643,6939,7737,8391],
+    "ITB":[3308,3580,3855,3874,4029,4375,4038,4191,4854,4841,4644,4958],
+    "ITS":[4089,3962,3895,3704,3796,4743,5346,5142,5912,6281,6578,6934],
+    "UNAIR":[5381,5233,5159,5008,4912,5197,5530,6188,7047,7713,7930,8779],
+    "UNAND":[3714,3698,3893,3772,4136,4323,5549,6083,6759,6580,6557,7094],
+    "UB":[11163,12768,12171,10250,10177,13354,13684,14386,14527,14486,14174,16135],
+    "UNDIP":[6957,7004,6705,8145,8404,10624,11444,11786,11794,12706,13153,14890],
+    "UGM":[7429,7302,6707,6173,7711,8273,8963,8958,9531,9891,10661,10591],
+    "UNHAS":[4588,5096,4976,5287,6152,6074,6830,7085,7502,8703,9234,10493],
+    "UI":[6806,6711,6969,6849,6939,7824,7366,7497,8315,8512,8640,8912],
+    "UNJ":[3950,4314,3996,4640,3726,3992,4659,4893,6153,5560,8095,10288],
+    "UM":[5709,6079,6116,5852,5662,5889,5874,5966,7909,7346,9267,12087],
+    "UNP":[4966,5589,6308,8211,7812,8041,7442,8498,8987,8262,10475,11004],
+    "UNNES":[6477,5876,6020,6187,6856,7046,7895,9306,10049,9992,11047,10836],
+    "UNESA":[4955,5004,4900,5325,5332,6039,5861,6076,10252,19191,16423,20175],
+    "UNY":[4659,4500,4848,4817,4951,6519,7331,8984,8363,8814,9046,10629],
+    "UNPAD":[5017,5542,6402,6127,6603,6159,6116,6270,7161,6675,8106,9657],
+    "UPI":[6086,6324,6719,6317,7149,8554,9167,8802,9449,9862,10452,11788],
+    "UNS":[5853,5655,5962,6665,6121,7127,7348,7859,8679,8563,9250,9800],
+    "UNSRI":[5952,2479,6162,6536,6506,6828,6739,6924,7231,7417,7637,8483],
+    "USK":[4192,4611,4328,4540,5242,5973,6802,6316,6175,6008,7427,7817]
+  };
+
+  // PTNBH cohort (status year) -> universities, with a blue-spectrum shade
+  var cohorts = [
+    {year:"2013", color:"#00559A", unis:["IPB","ITB","UGM","UI"]},
+    {year:"2014", color:"#1C6FB0", unis:["UNAIR","UPI"]},
+    {year:"2015", color:"#3E8AC4", unis:["ITS","UNPAD","UNDIP","UNHAS"]},
+    {year:"2020", color:"#5FA1D2", unis:["UNS"]},
+    {year:"2021", color:"#7FB5DD", unis:["UNAND","UB","UNP","UM"]},
+    {year:"2022", color:"#A1C9E8", unis:["UNY","UNNES","UNESA","USK"]},
+    {year:"2024", color:"#BFD9F0", unis:["UNJ","UNSRI"]}
+  ];
+
+  var colorOf = {};
+  cohorts.forEach(function(c){ c.unis.forEach(function(u){ colorOf[u]=c.color; }); });
+  var uniOrder = cohorts.reduce(function(a,c){ return a.concat(c.unis); },[]);
+
+  var yMax = 21000;
+  var yTicks = [0,5000,10000,15000,20000];
+
+  var svg = document.getElementById("chart");
+  var card = document.getElementById("card");
+  var tooltip = document.getElementById("tooltip");
+  var wrap = svg.parentNode;
+  var NS = "http://www.w3.org/2000/svg";
+
+  // legend
+  (function(){
+    var leg = document.getElementById("legend");
+    cohorts.forEach(function(c){
+      var it = document.createElement("div");
+      it.className = "item";
+      var sw = document.createElement("span");
+      sw.className = "swatch"; sw.style.background = c.color;
+      var lb = document.createElement("span");
+      lb.textContent = "PTNBH " + c.year;
+      it.appendChild(sw); it.appendChild(lb);
+      leg.appendChild(it);
+    });
+  })();
+
+  function el(name, attrs){
+    var e = document.createElementNS(NS, name);
+    for(var k in attrs){ e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+
+  var M = {top:10, right:72, bottom:24, left:40};
+  var paths = {};   // uni -> visible path
+  var dot = null;
+  var animated = false;
+
+  function fmt(n){ return n.toLocaleString("id-ID"); }
+
+  function xPos(i, W){ return M.left + (W-M.left-M.right) * (i/(years.length-1)); }
+  function yPos(v, H){ return M.top + (H-M.top-M.bottom) * (1 - v/yMax); }
+
+  function buildPath(vals, W, H){
+    var d="";
+    for(var i=0;i<vals.length;i++){
+      d += (i===0?"M":"L") + xPos(i,W).toFixed(1) + " " + yPos(vals[i],H).toFixed(1) + " ";
+    }
+    return d.trim();
+  }
+
+  function render(){
+    var rect = svg.getBoundingClientRect();
+    var W = rect.width, H = rect.height;
+    if(W<=0||H<=0) return;
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    paths = {};
+
+    // gridlines + y labels
+    yTicks.forEach(function(t){
+      var y = yPos(t,H);
+      svg.appendChild(el("line",{class:"gridline",x1:M.left,y1:y,x2:W-M.right,y2:y}));
+      var tl = el("text",{class:"ylab",x:M.left-6,y:y+4,"text-anchor":"end"});
+      tl.textContent = t===0?"0":(t/1000)+"rb";
+      svg.appendChild(tl);
+    });
+    // x baseline
+    svg.appendChild(el("line",{class:"axisbase",x1:M.left,y1:H-M.bottom,x2:W-M.right,y2:H-M.bottom}));
+    // x labels (every other year to avoid crowding on narrow widths)
+    years.forEach(function(yr,i){
+      if(W<760 && i%2===1) return;
+      var x = xPos(i,W);
+      var tx = el("text",{class:"xlab",x:x,y:H-M.bottom+16,"text-anchor":"middle"});
+      tx.textContent = yr;
+      svg.appendChild(tx);
+    });
+
+    // series (draw order: lightest cohort first so dark sits on top)
+    var ordered = uniOrder.slice().reverse();
+    ordered.forEach(function(u){
+      var d = buildPath(data[u],W,H);
+      var p = el("path",{class:"series",d:d,stroke:colorOf[u],role:"listitem",
+        "aria-label":u+": mahasiswa baru "+fmt(data[u][0])+" pada 2014 menjadi "+fmt(data[u][data[u].length-1])+" pada 2025"});
+      svg.appendChild(p);
+      paths[u]=p;
+    });
+    // hit paths on top
+    uniOrder.forEach(function(u){
+      var hp = el("path",{class:"hit",d:buildPath(data[u],W,H)});
+      hp.dataset.uni=u;
+      attachHover(hp,u);
+      svg.appendChild(hp);
+    });
+
+    placeLabels(W,H);
+
+    dot = el("circle",{class:"dot",r:4});
+    svg.appendChild(dot);
+
+    if(animated){ /* keep final state, no re-anim on resize */ }
+    return {W:W,H:H};
+  }
+
+  // priority: highest 2025 value + well-known campuses get truest placement / drawn last
+  var wellKnown = {"UI":1,"UGM":1,"ITB":1,"IPB":1,"UNAIR":1,"UNDIP":1,"UNPAD":1,"ITS":1,"UB":1,"UNHAS":1};
+  function labelEls(){ return svg.querySelectorAll(".lbl,.leader"); }
+
+  function placeLabels(W,H){
+    var last = years.length-1;
+    var items = uniOrder.map(function(u){
+      var v = data[u][last];
+      var py = yPos(v,H);
+      return {u:u, val:v, py:py, y:py, color:colorOf[u],
+              pr:(wellKnown[u]?100000:0)+v};
+    });
+    items.sort(function(a,b){ return a.py-b.py; });
+
+    var gap=12.5, topB=M.top+4, botB=H-M.bottom-2;
+    for(var i=1;i<items.length;i++){
+      if(items[i].y < items[i-1].y+gap) items[i].y=items[i-1].y+gap;
+    }
+    if(items[items.length-1].y>botB){
+      items[items.length-1].y=botB;
+      for(var j=items.length-2;j>=0;j--){
+        if(items[j].y>items[j+1].y-gap) items[j].y=items[j+1].y-gap;
+      }
+    }
+    if(items[0].y<topB){
+      items[0].y=topB;
+      for(var k=1;k<items.length;k++){
+        if(items[k].y<items[k-1].y+gap) items[k].y=items[k-1].y+gap;
+      }
+    }
+
+    var px = xPos(last,W);
+    var lx = W-M.right+8;
+    var shown = started || animated;
+    // draw lower-priority first so important labels sit on top
+    items.sort(function(a,b){ return a.pr-b.pr; });
+    items.forEach(function(it){
+      var ln = el("line",{class:"leader"+(shown?" shown":""),x1:px,y1:it.py,x2:lx-3,y2:it.y,stroke:it.color});
+      svg.appendChild(ln);
+      var t = el("text",{class:"lbl"+(shown?" shown":""),x:lx,y:it.y+3.5,fill:it.color});
+      t.textContent = it.u;
+      svg.appendChild(t);
+    });
+  }
+
+  function animateDraw(){
+    if(animated) return;
+    animated = true;
+    uniOrder.forEach(function(u,idx){
+      var p = paths[u];
+      if(!p) return;
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.getBoundingClientRect(); // reflow
+      p.style.transition = "stroke-dashoffset .82s cubic-bezier(0.16,1,0.3,1)";
+      var delay = 100 + 95*idx;
+      setTimeout(function(){ p.style.strokeDashoffset = "0"; }, delay);
+      // clear dasharray after so resize redraw is clean
+      setTimeout(function(){ p.style.strokeDasharray=""; p.style.transition=""; }, delay+900);
+    });
+  }
+
+  function attachHover(hit,u){
+    hit.addEventListener("mouseenter", function(){
+      svg.classList.add("has-active");
+      for(var k in paths) paths[k].classList.remove("active");
+      paths[u].classList.add("active");
+      // move active series visually to front
+      svg.appendChild(paths[u]);
+    });
+    hit.addEventListener("mousemove", function(ev){ showTip(ev,u); });
+    hit.addEventListener("mouseleave", function(){
+      svg.classList.remove("has-active");
+      paths[u].classList.remove("active");
+      tooltip.classList.remove("show");
+      dot.classList.remove("show");
+    });
+  }
+
+  function showTip(ev, u){
+    var rect = svg.getBoundingClientRect();
+    var W = rect.width, H = rect.height;
+    var px = ev.clientX - rect.left;
+    // nearest year index
+    var rel = (px - M.left)/(W-M.left-M.right);
+    var i = Math.round(rel*(years.length-1));
+    i = Math.max(0, Math.min(years.length-1, i));
+    var val = data[u][i];
+    var cx = xPos(i,W), cy = yPos(val,H);
+
+    dot.setAttribute("cx",cx); dot.setAttribute("cy",cy);
+    dot.classList.add("show");
+
+    var first = data[u][0];
+    var pct = ((val-first)/first*100);
+    var sign = pct>=0?"+":"–";
+    var pillTxt = "vs 2014: "+sign+Math.abs(pct).toFixed(1)+"%";
+
+    tooltip.innerHTML =
+      '<div class="tt-year">'+years[i]+'</div>'+
+      '<div class="tt-name">'+u+'</div>'+
+      '<div class="tt-val">'+fmt(val)+' mahasiswa baru</div>'+
+      '<span class="tt-pill">'+pillTxt+'</span>';
+    tooltip.classList.add("show");
+
+    // position within wrap, flip if near right edge
+    var wrapRect = wrap.getBoundingClientRect();
+    var tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    var lx = cx + 14, ly = cy - th - 8;
+    if(lx + tw > wrapRect.width) lx = cx - tw - 14;
+    if(ly < 0) ly = cy + 12;
+    tooltip.style.left = lx + "px";
+    tooltip.style.top = ly + "px";
+  }
+
+  // initial render
+  render();
+
+  // entrance + draw animation via IntersectionObserver (20% threshold)
+  var started = false;
+  function start(){
+    if(started) return; started = true;
+    card.classList.add("in");
+    setTimeout(animateDraw, 200);
+    setTimeout(function(){
+      var ls = labelEls();
+      for(var i=0;i<ls.length;i++) ls[i].classList.add("shown");
+    }, 700);
+  }
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ start(); io.disconnect(); } });
+    },{threshold:0.2});
+    io.observe(card);
+    setTimeout(start, 250); // fallback
+  } else {
+    start();
+  }
+
+  // resize redraw (debounced)
+  var rt;
+  window.addEventListener("resize", function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){
+      var wasAnim = animated;
+      animated = true; // prevent re-animation
+      render();
+      animated = wasAnim;
+    }, 120);
+  });
+})();
+</script>
+</body>
+</html>
