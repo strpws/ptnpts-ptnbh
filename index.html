@@ -61,6 +61,7 @@
 
   path.series{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;
     transition:opacity .13s ease,stroke-width .13s ease;}
+  path.series.avg{stroke-width:2.8;}
   path.hit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer;}
 
   /* dimming on hover */
@@ -147,7 +148,9 @@
     "UPI":[6086,6324,6719,6317,7149,8554,9167,8802,9449,9862,10452,11788],
     "UNS":[5853,5655,5962,6665,6121,7127,7348,7859,8679,8563,9250,9800],
     "UNSRI":[5952,2479,6162,6536,6506,6828,6739,6924,7231,7417,7637,8483],
-    "USK":[4192,4611,4328,4540,5242,5973,6802,6316,6175,6008,7427,7817]
+    "USK":[4192,4611,4328,4540,5242,5973,6802,6316,6175,6008,7427,7817],
+    "Rata-rata PTN Lain":[1998,2060,2104,2143,2221,2263,2316,2508,2594,2524,2672,2919],
+    "Rata-rata PTS":[531,473,480,468,490,467,418,416,414,384,369,366]
   };
 
   // PTNBH cohort (status year) -> universities, with a blue-spectrum shade
@@ -164,6 +167,13 @@
   var colorOf = {};
   cohorts.forEach(function(c){ c.unis.forEach(function(u){ colorOf[u]=c.color; }); });
   var uniOrder = cohorts.reduce(function(a,c){ return a.concat(c.unis); },[]);
+
+  // emphasized average reference lines
+  var avgKeys = {"Rata-rata PTN Lain":1,"Rata-rata PTS":1};
+  colorOf["Rata-rata PTN Lain"]="#00559A";
+  colorOf["Rata-rata PTS"]="#DBAA00";
+  uniOrder.push("Rata-rata PTN Lain","Rata-rata PTS");
+  var labelText={"Rata-rata PTN Lain":"Rerata PTN lain","Rata-rata PTS":"Rerata PTS"};
 
   var yMax = 21000;
   var yTicks = [0,5000,10000,15000,20000];
@@ -186,6 +196,13 @@
       lb.textContent = "PTNBH " + c.year;
       it.appendChild(sw); it.appendChild(lb);
       leg.appendChild(it);
+    });
+    [["Rerata PTN lain","#00559A"],["Rerata PTS","#DBAA00"]].forEach(function(a){
+      var it=document.createElement("div"); it.className="item";
+      var sw=document.createElement("span"); sw.className="swatch";
+      sw.style.background=a[1]; sw.style.height="4px";
+      var lb=document.createElement("span"); lb.textContent=a[0];
+      it.appendChild(sw); it.appendChild(lb); leg.appendChild(it);
     });
   })();
 
@@ -244,7 +261,7 @@
     var ordered = uniOrder.slice().reverse();
     ordered.forEach(function(u){
       var d = buildPath(data[u],W,H);
-      var p = el("path",{class:"series",d:d,stroke:colorOf[u],role:"listitem",
+      var p = el("path",{class:"series"+(avgKeys[u]?" avg":""),d:d,stroke:colorOf[u],role:"listitem",
         "aria-label":u+": mahasiswa baru "+fmt(data[u][0])+" pada 2014 menjadi "+fmt(data[u][data[u].length-1])+" pada 2025"});
       svg.appendChild(p);
       paths[u]=p;
@@ -267,7 +284,7 @@
   }
 
   // priority: highest 2025 value + well-known campuses get truest placement / drawn last
-  var wellKnown = {"UI":1,"UGM":1,"ITB":1,"IPB":1,"UNAIR":1,"UNDIP":1,"UNPAD":1,"ITS":1,"UB":1,"UNHAS":1};
+  var wellKnown = {"UI":1,"UGM":1,"ITB":1,"IPB":1,"UNAIR":1,"UNDIP":1,"UNPAD":1,"ITS":1,"UB":1,"UNHAS":1,"Rata-rata PTN Lain":1,"Rata-rata PTS":1};
   function labelEls(){ return svg.querySelectorAll(".lbl,.leader"); }
 
   function placeLabels(W,H){
@@ -306,7 +323,7 @@
       var ln = el("line",{class:"leader"+(shown?" shown":""),x1:px,y1:it.py,x2:lx-3,y2:it.y,stroke:it.color});
       svg.appendChild(ln);
       var t = el("text",{class:"lbl"+(shown?" shown":""),x:lx,y:it.y+3.5,fill:it.color});
-      t.textContent = it.u;
+      t.textContent = labelText[it.u] || it.u;
       svg.appendChild(t);
     });
   }
