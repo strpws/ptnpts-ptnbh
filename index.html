@@ -110,7 +110,7 @@
     <div class="legend" id="legend" aria-hidden="true"></div>
 
     <div class="chartwrap">
-      <svg class="chart" id="chart" role="list" aria-label="Tren jumlah mahasiswa baru 21 PTN, 2014 hingga 2025"></svg>
+      <svg class="chart" id="chart" role="list" aria-label="Tren jumlah mahasiswa baru 21 PTN serta rata-rata PTN lain dan PTS, 2014 hingga 2025"></svg>
       <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
     </div>
 
@@ -382,11 +382,17 @@
     var sign = pct>=0?"+":"–";
     var pillTxt = "vs 2014: "+sign+Math.abs(pct).toFixed(1)+"%";
 
+    var isPTS = (u === "Rata-rata PTS");
+    var valColor = isPTS ? "var(--pts-deep)" : "var(--ptn-deep)";
+    var pillStyle = isPTS
+      ? "background:var(--pts-pale);color:var(--pts-deep);"
+      : "background:var(--ptn-pale);color:var(--ptn-deep);";
+
     tooltip.innerHTML =
       '<div class="tt-year">'+years[i]+'</div>'+
       '<div class="tt-name">'+u+'</div>'+
-      '<div class="tt-val">'+fmt(val)+' mahasiswa baru</div>'+
-      '<span class="tt-pill">'+pillTxt+'</span>';
+      '<div class="tt-val" style="color:'+valColor+'">'+fmt(val)+' mahasiswa baru</div>'+
+      '<span class="tt-pill" style="'+pillStyle+'">'+pillTxt+'</span>';
     tooltip.classList.add("show");
 
     // position within wrap, flip if near right edge
