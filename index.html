@@ -21,10 +21,12 @@
   html,body{background:#FFFFFF;}
   /* fluid base: vw = iframe width inside the embed; all sizing cascades from here */
   html{font-size:clamp(13px, 2.1vw, 17px);}
+  html,body{height:100%;}
   body{
     font-family:"PT Sans",Arial,sans-serif;
     color:var(--tx-dark);
-    display:flex;justify-content:center;
+    display:flex;justify-content:center;align-items:stretch;
+    min-height:100vh;
     padding:1em;
     -webkit-font-smoothing:antialiased;
   }
@@ -33,7 +35,6 @@
     position:relative;
     width:100%;
     max-width:1080px;
-    aspect-ratio:2/3;
     background:#FFFFFF;
     border-radius:0.375em;
     padding:1.375em 1.375em 1.25em 1.375em;
