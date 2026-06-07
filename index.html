@@ -19,45 +19,46 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:#FFFFFF;}
+  /* fluid base: vw = iframe width inside the embed; all sizing cascades from here */
+  html{font-size:clamp(13px, 2.1vw, 17px);}
   body{
     font-family:"PT Sans",Arial,sans-serif;
     color:var(--tx-dark);
     display:flex;justify-content:center;
-    padding:16px;
+    padding:1em;
     -webkit-font-smoothing:antialiased;
   }
 
   .card{
     position:relative;
     width:100%;
-    min-width:640px;
     max-width:1080px;
     aspect-ratio:2/3;
     background:#FFFFFF;
-    border-radius:6px;
-    padding:22px 22px 20px 22px;
+    border-radius:0.375em;
+    padding:1.375em 1.375em 1.25em 1.375em;
     display:flex;flex-direction:column;
     overflow:hidden;
-    opacity:0;transform:translateY(6px);
+    opacity:0;transform:translateY(0.4em);
   }
   .card.in{opacity:1;transform:translateY(0);transition:opacity .35s ease,transform .35s ease;}
 
   /* header */
-  .title{font-family:"Lora",Georgia,serif;font-weight:700;font-size:20px;color:var(--tx-head);line-height:1.2;}
-  .deck{font-family:"Lora",Georgia,serif;font-style:italic;font-weight:400;font-size:15px;color:var(--tx-mid);margin-top:6px;line-height:1.35;}
+  .title{font-family:"Lora",Georgia,serif;font-weight:700;font-size:1.25rem;color:var(--tx-head);line-height:1.2;}
+  .deck{font-family:"Lora",Georgia,serif;font-style:italic;font-weight:400;font-size:0.9375rem;color:var(--tx-mid);margin-top:0.4em;line-height:1.35;}
 
-  .legend{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:13px;padding:7px 0;}
-  .legend .item{display:flex;align-items:center;gap:5px;font-weight:700;font-size:14px;color:var(--tx-dark);cursor:default;}
-  .legend .swatch{width:14px;height:4px;border-radius:9999px;flex:none;}
+  .legend{display:flex;flex-wrap:wrap;gap:0.5em 1em;margin-top:0.8em;padding:0.5em 0;}
+  .legend .item{display:flex;align-items:center;gap:0.36em;font-weight:700;font-size:0.875rem;color:var(--tx-dark);cursor:default;}
+  .legend .swatch{width:1em;height:0.29em;border-radius:9999px;flex:none;}
 
   /* chart */
-  .chartwrap{position:relative;flex:1 1 auto;margin-top:6px;min-height:0;}
+  .chartwrap{position:relative;flex:1 1 auto;margin-top:0.4em;min-height:0;}
   svg.chart{width:100%;height:100%;display:block;overflow:visible;}
 
   .gridline{stroke:var(--divider);stroke-width:1;}
   .axisbase{stroke:var(--border);stroke-width:1;}
-  .ylab{font-size:12px;font-weight:700;fill:var(--tx-dark);}
-  .xlab{font-size:12px;font-weight:700;fill:var(--tx-light);}
+  .ylab{font-size:0.75rem;font-weight:700;fill:var(--tx-dark);}
+  .xlab{font-size:0.75rem;font-weight:700;fill:var(--tx-light);}
 
   path.series{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;
     transition:opacity .13s ease,stroke-width .13s ease;}
@@ -71,7 +72,7 @@
   .dot{fill:var(--pts-hover);stroke:#fff;stroke-width:1.5;opacity:0;pointer-events:none;}
   .dot.show{opacity:1;}
 
-  text.lbl{font-size:11px;font-weight:700;opacity:0;transition:opacity .3s ease;}
+  text.lbl{font-size:0.6875rem;font-weight:700;opacity:0;transition:opacity .3s ease;}
   line.leader{stroke-width:1;opacity:0;transition:opacity .3s ease;}
   text.lbl.shown,line.leader.shown{opacity:1;}
   line.leader.shown{opacity:.45;}
@@ -79,21 +80,21 @@
   /* tooltip */
   .tooltip{
     position:absolute;pointer-events:none;z-index:5;
-    background:#fff;border:1px solid var(--border);border-radius:6px;
-    padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.10);
+    background:#fff;border:1px solid var(--border);border-radius:0.375em;
+    padding:0.5em 0.625em;box-shadow:0 0.25em 0.875em rgba(0,0,0,.10);
     opacity:0;transform:scale(.88);transform-origin:top left;
     transition:opacity .14s ease,transform .14s ease;
-    min-width:120px;
+    min-width:7.5em;
   }
   .tooltip.show{opacity:1;transform:scale(1);}
-  .tt-year{font-weight:700;font-size:15px;color:var(--tx-head);}
-  .tt-name{font-weight:700;font-size:13px;color:var(--tx-light);margin-top:2px;}
-  .tt-val{font-weight:700;font-size:14px;color:var(--ptn-deep);margin-top:4px;}
-  .tt-pill{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:9999px;
-    font-weight:700;font-size:12px;background:var(--pts-pale);color:var(--pts-deep);}
+  .tt-year{font-weight:700;font-size:0.9375rem;color:var(--tx-head);}
+  .tt-name{font-weight:700;font-size:0.8125rem;color:var(--tx-light);margin-top:0.15em;}
+  .tt-val{font-weight:700;font-size:0.875rem;color:var(--ptn-deep);margin-top:0.29em;}
+  .tt-pill{display:inline-block;margin-top:0.5em;padding:0.17em 0.67em;border-radius:9999px;
+    font-weight:700;font-size:0.75rem;background:var(--pts-pale);color:var(--pts-deep);}
 
   /* footer */
-  .source{margin-top:13px;font-size:12px;font-weight:400;color:var(--tx-light);line-height:1.4;}
+  .source{margin-top:0.8em;font-size:0.75rem;font-weight:400;color:var(--tx-light);line-height:1.4;}
   .source b{font-weight:700;color:var(--tx-mid);}
 
   @media (prefers-reduced-motion: reduce){
@@ -200,7 +201,7 @@
     [["Rerata PTN lain","#00559A"],["Rerata PTS","#DBAA00"]].forEach(function(a){
       var it=document.createElement("div"); it.className="item";
       var sw=document.createElement("span"); sw.className="swatch";
-      sw.style.background=a[1]; sw.style.height="4px";
+      sw.style.background=a[1]; sw.style.height="0.29em";
       var lb=document.createElement("span"); lb.textContent=a[0];
       it.appendChild(sw); it.appendChild(lb); leg.appendChild(it);
     });
@@ -213,9 +214,16 @@
   }
 
   var M = {top:10, right:72, bottom:24, left:40};
-  var paths = {};   // uni -> visible path
+  var paths = {};       // uni -> visible path
+  var labelNodes = {};  // uni -> {t:text, ln:leader, isDefault:bool}
   var dot = null;
   var animated = false;
+
+  // only these labels show by default; the rest appear on hover / tap
+  var DEFAULT_LABELS = {
+    "UNESA":1,"UB":1,"UNDIP":1,"UM":1,
+    "Rata-rata PTN Lain":1,"Rata-rata PTS":1
+  };
 
   function fmt(n){ return n.toLocaleString("id-ID"); }
 
@@ -285,15 +293,32 @@
 
   // priority: highest 2025 value + well-known campuses get truest placement / drawn last
   var wellKnown = {"UI":1,"UGM":1,"ITB":1,"IPB":1,"UNAIR":1,"UNDIP":1,"UNPAD":1,"ITS":1,"UB":1,"UNHAS":1,"Rata-rata PTN Lain":1,"Rata-rata PTS":1};
-  function labelEls(){ return svg.querySelectorAll(".lbl,.leader"); }
+  // entrance animation only reveals the always-on labels
+  function labelEls(){ return svg.querySelectorAll(".lbl-default"); }
+
+  function createLabel(it, px, lx, isDefault, shown){
+    var base = isDefault ? " lbl-default" : "";
+    var on = (isDefault && shown) ? " shown" : "";
+    var ln = el("line",{class:"leader"+base+on,x1:px,y1:it.py,x2:lx-3,y2:it.y,stroke:it.color});
+    svg.appendChild(ln);
+    var t = el("text",{class:"lbl"+base+on,x:lx,y:it.y+3.5,fill:it.color});
+    t.textContent = labelText[it.u] || it.u;
+    svg.appendChild(t);
+    labelNodes[it.u] = {t:t, ln:ln, isDefault:isDefault};
+  }
 
   function placeLabels(W,H){
+    labelNodes = {};
     var last = years.length-1;
-    var items = uniOrder.map(function(u){
+    var px = xPos(last,W);
+    var lx = W-M.right+8;
+    var shown = started || animated;
+
+    // always-on labels: stack to avoid overlap among themselves
+    var items = uniOrder.filter(function(u){ return DEFAULT_LABELS[u]; }).map(function(u){
       var v = data[u][last];
       var py = yPos(v,H);
-      return {u:u, val:v, py:py, y:py, color:colorOf[u],
-              pr:(wellKnown[u]?100000:0)+v};
+      return {u:u, py:py, y:py, color:colorOf[u], pr:(wellKnown[u]?100000:0)+v};
     });
     items.sort(function(a,b){ return a.py-b.py; });
 
@@ -301,31 +326,41 @@
     for(var i=1;i<items.length;i++){
       if(items[i].y < items[i-1].y+gap) items[i].y=items[i-1].y+gap;
     }
-    if(items[items.length-1].y>botB){
+    if(items.length && items[items.length-1].y>botB){
       items[items.length-1].y=botB;
       for(var j=items.length-2;j>=0;j--){
         if(items[j].y>items[j+1].y-gap) items[j].y=items[j+1].y-gap;
       }
     }
-    if(items[0].y<topB){
+    if(items.length && items[0].y<topB){
       items[0].y=topB;
       for(var k=1;k<items.length;k++){
         if(items[k].y<items[k-1].y+gap) items[k].y=items[k-1].y+gap;
       }
     }
-
-    var px = xPos(last,W);
-    var lx = W-M.right+8;
-    var shown = started || animated;
     // draw lower-priority first so important labels sit on top
     items.sort(function(a,b){ return a.pr-b.pr; });
-    items.forEach(function(it){
-      var ln = el("line",{class:"leader"+(shown?" shown":""),x1:px,y1:it.py,x2:lx-3,y2:it.y,stroke:it.color});
-      svg.appendChild(ln);
-      var t = el("text",{class:"lbl"+(shown?" shown":""),x:lx,y:it.y+3.5,fill:it.color});
-      t.textContent = labelText[it.u] || it.u;
-      svg.appendChild(t);
+    items.forEach(function(it){ createLabel(it,px,lx,true,shown); });
+
+    // hover-only labels: anchored at their true data point, hidden until active
+    uniOrder.forEach(function(u){
+      if(DEFAULT_LABELS[u]) return;
+      var v = data[u][last], py = yPos(v,H);
+      createLabel({u:u, py:py, y:py, color:colorOf[u]}, px, lx, false, shown);
     });
+  }
+
+  function showLabel(u){
+    var n = labelNodes[u];
+    if(!n) return;
+    svg.appendChild(n.ln); svg.appendChild(n.t); // bring to front
+    n.t.classList.add("shown"); n.ln.classList.add("shown");
+  }
+  function hideHoverLabels(){
+    for(var u in labelNodes){
+      var n = labelNodes[u];
+      if(!n.isDefault){ n.t.classList.remove("shown"); n.ln.classList.remove("shown"); }
+    }
   }
 
   function animateDraw(){
@@ -346,21 +381,30 @@
     });
   }
 
+  function activate(u){
+    svg.classList.add("has-active");
+    for(var k in paths) paths[k].classList.remove("active");
+    paths[u].classList.add("active");
+    svg.appendChild(paths[u]); // move active series visually to front
+    hideHoverLabels();
+    showLabel(u);              // reveal this line's label
+  }
+  function deactivate(u){
+    svg.classList.remove("has-active");
+    if(paths[u]) paths[u].classList.remove("active");
+    tooltip.classList.remove("show");
+    dot.classList.remove("show");
+    hideHoverLabels();
+  }
+
   function attachHover(hit,u){
-    hit.addEventListener("mouseenter", function(){
-      svg.classList.add("has-active");
-      for(var k in paths) paths[k].classList.remove("active");
-      paths[u].classList.add("active");
-      // move active series visually to front
-      svg.appendChild(paths[u]);
-    });
+    hit.addEventListener("mouseenter", function(){ activate(u); });
     hit.addEventListener("mousemove", function(ev){ showTip(ev,u); });
-    hit.addEventListener("mouseleave", function(){
-      svg.classList.remove("has-active");
-      paths[u].classList.remove("active");
-      tooltip.classList.remove("show");
-      dot.classList.remove("show");
-    });
+    hit.addEventListener("mouseleave", function(){ deactivate(u); });
+    // touch: tap a line to reveal it (sticky until another line is tapped)
+    hit.addEventListener("touchstart", function(ev){
+      if(ev.touches && ev.touches[0]){ activate(u); showTip(ev.touches[0],u); }
+    }, {passive:true});
   }
 
   function showTip(ev, u){
